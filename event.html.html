@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Planning Website</title>
+    <style>
+        /* General styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e8f4f8; /* Light cyan background */
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        header {
+            background: #1e90ff; /* Dodger blue color */
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        section {
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            color: #1e90ff; /* Dodger blue color */
+            margin-bottom: 20px;
+        }
+
+        button {
+            background: #32cd32; /* Lime green color */
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        button:hover {
+            background: #228b22; /* Forest green color */
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        #events .event-card {
+            background: #f9f9f9;
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #events .event-card h3 {
+            margin: 0 0 10px;
+            font-size: 1.5em;
+            color: #ff4500; /* Orange red color */
+        }
+
+        #events .event-card p {
+            margin: 5px 0;
+        }
+
+        #calendar {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        #calendar table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #calendar th, #calendar td {
+            width: 14.28%;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+        }
+
+        #calendar th {
+            background: #1e90ff; /* Dodger blue color */
+            color: #fff;
+        }
+
+        #calendar td.other-month {
+            background: #e8f4f8; /* Light cyan background */
+            color: #ccc;
+        }
+
+        #calendar .day {
+            position: relative;
+        }
+
+        #calendar .event-marker {
+            background: #ff4500; /* Orange red color */
+            color: #fff;
+            padding: 5px;
+            border-radius: 5px;
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 0.8em;
+            display: inline-block;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Event Planning Website</h1>
+    </header>
+    <div class="container">
+        <section id="event-creation">
+            <h2>Create Event</h2>
+            <form id="event-form">
+                <input type="text" id="event-title" placeholder="Event Title" required>
+                <textarea id="event-description" placeholder="Event Description" required></textarea>
+                <input type="datetime-local" id="event-date" required>
+                <button type="submit">Create Event</button>
+            </form>
+        </section>
+        <section id="event-list">
+            <h2>Upcoming Events</h2>
+            <div id="events"></div>
+        </section>
+        <section id="calendar-view">
+            <h2>Calendar</h2>
+            <div id="calendar"></div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const eventForm = document.getElementById('event-form');
+            const eventTitle = document.getElementById('event-title');
+            const eventDescription = document.getElementById('event-description');
+            const eventDate = document.getElementById('event-date');
+            const eventsContainer = document.getElementById('events');
+            const calendarContainer = document.getElementById('calendar');
+
+            // Load events from local storage
+            let events = JSON.parse(localStorage.getItem('events')) || [];
+
+            // Render events
+            const renderEvents = () => {
+                eventsContainer.innerHTML = '';
+                events.forEach((event, index) => {
+                    const eventCard = document.createElement('div');
+                    eventCard.classList.add('event-card');
+                    const eventDateObj = new Date(event.date);
+                    const formattedDate = eventDateObj.toLocaleDateString();
+                    const formattedTime = eventDateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    eventCard.innerHTML = `
+                        <h3>${event.title}</h3>
+                        <p>${event.description}</p>
+                        <p>${formattedDate} at ${formattedTime}</p>
+                        <button onclick="rsvpEvent(${index})">RSVP</button>
+                    `;
+                    eventsContainer.appendChild(eventCard);
+                });
+
+                renderCalendar();
+            };
+
+            // Render calendar
+            const renderCalendar = () => {
+                calendarContainer.innerHTML = '';
+                const calendar = document.createElement('table');
+                const headerRow = document.createElement('tr');
+                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                days.forEach(day => {
+                    const th = document.createElement('th');
+                    th.innerText = day;
+                    headerRow.appendChild(th);
+                });
+                calendar.appendChild(headerRow);
+
+                // Get the current date
+                const today = new Date();
+                const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+                let date = new Date(firstDayOfMonth);
+                date.setDate(date.getDate() - date.getDay());
+
+                // Fill the calendar with days
+                while (date <= lastDayOfMonth || date.getDay() !== 0) {
+                    const row = document.createElement('tr');
+                    for (let i = 0; i < 7; i++) {
+                        const cell = document.createElement('td');
+                        cell.innerText = date.getDate();
+                        cell.classList.add('day');
+                        if (date.getMonth() !== today.getMonth()) {
+                            cell.classList.add('other-month');
+                        }
+                        const eventForDay = events.find(event => new Date(event.date).toDateString() === date.toDateString());
+                        if (eventForDay) {
+                            const eventMarker = document.createElement('div');
+                            eventMarker.classList.add('event-marker');
+                            eventMarker.innerText = 'Event';
+                            cell.appendChild(eventMarker);
+                        }
+                        row.appendChild(cell);
+                        date.setDate(date.getDate() + 1);
+                    }
+                    calendar.appendChild(row);
+                }
+
+                calendarContainer.appendChild(calendar);
+            };
+
+            // Add new event
+            eventForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const newEvent = {
+                    title: eventTitle.value,
+                    description: eventDescription.value,
+                    date: eventDate.value
+                };
+                events.push(newEvent);
+                localStorage.setItem('events', JSON.stringify(events));
+                eventForm.reset();
+                renderEvents();
+            });
+
+            // RSVP to event
+            window.rsvpEvent = (index) => {
+                alert(RSVP'd to: ${events[index].title});
+            };
+
+            // Initial render
+            renderEvents();
+        });
+    </script>
+</body>
+</html>
