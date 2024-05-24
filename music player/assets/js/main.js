@@ -22,7 +22,7 @@ let updateTimer;
 
 const music_list = [
   {
-    img: "assets/images/slay.jpg",
+    img: "assets/images/25b07a81e338dcfc6b4a2898c24c6f17.jpg",
     name: "SLAY",
     artist: "Eternxlkz",
     music: "assets/music/Eternxlkz_-_SLAY!__Official_Audio_(128k).mp3",
