@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crowdfunding Platform</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Crowdfunding Platform</h1>
+    </header>
+
+    <main>
+        <section id="create-project">
+            <h2>Create a New Project</h2>
+            <form id="project-form">
+                <label for="title">Project Title:</label>
+                <input type="text" id="title" name="title" required>
+                
+                <label for="description">Project Description:</label>
+                <textarea id="description" name="description" required></textarea>
+                
+                <label for="goal">Funding Goal ($):</label>
+                <input type="number" id="goal" name="goal" required>
+                
+                <button type="submit">Create Project</button>
+            </form>
+        </section>
+
+        <section id="projects">
+            <h2>Projects</h2>
+            <div id="project-list"></div>
+        </section>
+    </main>
+
+    <!-- Contribution Modal -->
+    <div id="contribution-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Contribute to Project</h2>
+            <form id="contribution-form">
+                <label for="contribution-amount">Amount ($):</label>
+                <input type="number" id="contribution-amount" name="amount" required>
+                <button type="submit">Contribute</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
